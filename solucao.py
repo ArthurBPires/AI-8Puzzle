@@ -54,22 +54,29 @@ def sucessor(estado):
     :param estado:
     :return:
     """
-    movimentos_por_posicao = [
-        [(DIREITA, 1), (ABAIXO, 3)], [(ESQUERDA, 0), (DIREITA, 2), (ABAIXO, 4)], [(ESQUERDA, 1), (ABAIXO, 5)],
-        [(ACIMA, 0), (DIREITA, 4), (ABAIXO, 6)], [(ACIMA, 1), (DIREITA, 5), (ABAIXO, 7), (ESQUERDA, 3)], [(ACIMA, 2), (ABAIXO, 8), (ESQUERDA, 4)],
-        [(ACIMA, 3), (DIREITA, 7)], [(ACIMA, 4), (DIREITA, 8), (ESQUERDA, 6)], [(ACIMA, 5), (ESQUERDA, 7)]
-    ]
-
-    posicao_livre = estado.find(VAZIO)
-
-    estados_sucessores = []
-    for movimento in movimentos_por_posicao[posicao_livre]:
-        estado_sucessor = _movimenta(estado, movimento)
-        acao = movimento[0]
-        sucessor = (acao, estado_sucessor)
-        estados_sucessores.append(sucessor)
-
-    return estados_sucessores
+    lista_possiveis = []
+    pos = estado.find('_')
+    if pos <= 5:
+        novo_estado = list(estado)
+        novo_estado[pos], novo_estado[pos +
+                                      3] = novo_estado[pos+3], novo_estado[pos]
+        lista_possiveis.append(('abaixo', str(''.join(novo_estado))))
+    if pos >= 3:
+        novo_estado = list(estado)
+        novo_estado[pos], novo_estado[pos -
+                                      3] = novo_estado[pos-3], novo_estado[pos]
+        lista_possiveis.append(('acima', str(''.join(novo_estado))))
+    if pos % 3 != 2:
+        novo_estado = list(estado)
+        novo_estado[pos], novo_estado[pos +
+                                      1] = novo_estado[pos+1], novo_estado[pos]
+        lista_possiveis.append(('direita', str(''.join(novo_estado))))
+    if pos % 3 != 0:
+        novo_estado = list(estado)
+        novo_estado[pos], novo_estado[pos -
+                                      1] = novo_estado[pos-1], novo_estado[pos]
+        lista_possiveis.append(('esquerda', str(''.join(novo_estado))))
+    return lista_possiveis
 
 
 def expande(nodo):
