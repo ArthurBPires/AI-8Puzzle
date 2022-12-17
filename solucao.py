@@ -1,3 +1,16 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+ESQUERDA = "esquerda"
+DIREITA = "direita"
+ABAIXO = "abaixo"
+ACIMA = "acima"
+VAZIO = "_"
+ESTADO_FINAL = "12345678_"
+
+from estrutura_dados import Pilha as Pilha
+from estrutura_dados import Fila as Fila
+from estrutura_dados import FilaPrioridades as FilaPrioridades
+
 class Nodo:
     """
     Implemente a classe Nodo com os atributos descritos na funcao init
@@ -10,8 +23,27 @@ class Nodo:
         :param acao:str, acao a partir do pai que leva a este nodo (None no caso do nó raiz)
         :param custo:int, custo do caminho da raiz até este nó
         """
-        # substitua a linha abaixo pelo seu codigo
-        raise NotImplementedError
+        self.estado = estado
+        self.pai = pai
+        self.acao = acao
+        self.custo = custo
+
+    def __lt__(self, other):
+        return False
+
+    def __le__(self, other):
+        return False
+
+def _movimenta(estado, movimento):
+    posicao_movimentada = movimento[1]
+    posicao_livre = estado.find(VAZIO)
+
+    peca_movimentada = estado[posicao_movimentada]
+
+    novo_estado = estado
+    novo_estado = novo_estado[:posicao_movimentada] + VAZIO + novo_estado[posicao_movimentada + 1:]
+    novo_estado = novo_estado[:posicao_livre] + peca_movimentada + novo_estado[posicao_livre + 1:]
+    return novo_estado
 
 
 def sucessor(estado):
@@ -22,8 +54,22 @@ def sucessor(estado):
     :param estado:
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    movimentos_por_posicao = [
+        [(DIREITA, 1), (ABAIXO, 3)], [(ESQUERDA, 0), (DIREITA, 2), (ABAIXO, 4)], [(ESQUERDA, 1), (ABAIXO, 5)],
+        [(ACIMA, 0), (DIREITA, 4), (ABAIXO, 6)], [(ACIMA, 1), (DIREITA, 5), (ABAIXO, 7), (ESQUERDA, 3)], [(ACIMA, 2), (ABAIXO, 8), (ESQUERDA, 4)],
+        [(ACIMA, 3), (DIREITA, 7)], [(ACIMA, 4), (DIREITA, 8), (ESQUERDA, 6)], [(ACIMA, 5), (ESQUERDA, 7)]
+    ]
+
+    posicao_livre = estado.find(VAZIO)
+
+    estados_sucessores = []
+    for movimento in movimentos_por_posicao[posicao_livre]:
+        estado_sucessor = _movimenta(estado, movimento)
+        acao = movimento[0]
+        sucessor = (acao, estado_sucessor)
+        estados_sucessores.append(sucessor)
+
+    return estados_sucessores
 
 
 def expande(nodo):
@@ -33,8 +79,36 @@ def expande(nodo):
     :param nodo: objeto da classe Nodo
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    pai = nodo
+    
+    novo_custo = pai.custo + 1
+    movimentos = sucessor(pai.estado)
+
+    filhos = []
+    for (acao, estado) in movimentos:
+        filho = Nodo(estado, pai, acao, novo_custo)
+
+        if pai.pai is not None: #nodo não é raiz
+            if estado == pai.pai.estado:#sucessor é igual ao movimento anterior. não adiciona na lista de filhos
+                pass
+            else:
+                filhos.append(filho)
+        else:
+            filhos.append(filho)
+
+    return filhos
+
+def caminho(node_final):
+    f = Pilha()
+    caminho = []
+
+    while node_final.pai != None:
+        f.push((node_final.acao)) #f.push((node_final.estado,node_final.acao))
+        node_final = node_final.pai
+    
+    while f.items:
+        caminho.append(f.pop())
+    return caminho
 
 
 def bfs(estado):
@@ -46,8 +120,21 @@ def bfs(estado):
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    explorados = set()
+
+    fronteira = Fila()
+    fronteira.enfileira(Nodo(estado,None,None,0))
+
+    while fronteira.items:
+        nodo = fronteira.desenfileira()
+        if nodo.estado == ESTADO_FINAL:
+            return caminho(nodo)
+        if nodo.estado not in explorados:
+            explorados.add(nodo.estado)
+            vizinhos = expande(nodo)
+            for n in vizinhos:
+                fronteira.enfileira(n)
+    return None
 
 
 def dfs(estado):
@@ -59,8 +146,54 @@ def dfs(estado):
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    explorados = set()
+
+    fronteira = Pilha()
+    fronteira.push(Nodo(estado,None,None,0))
+
+    while fronteira.items:
+        nodo = fronteira.pop()
+        if nodo.estado == ESTADO_FINAL:
+            return caminho(nodo)
+        if nodo.estado not in explorados:
+            explorados.add(nodo.estado)
+            vizinhos = expande(nodo)
+            for n in vizinhos:
+                fronteira.push(n)
+    return None
+
+def _tem_solucao(estado):
+    inversoes = 0
+    for i, valor in enumerate(estado):
+        if valor == VAZIO:
+            continue
+        for k, posterior in enumerate(estado):
+            if posterior == VAZIO:
+                continue
+            if k > i:
+                if valor > posterior:
+                    inversoes += 1
+    return (inversoes % 2 == 0)
+
+def calcula_heuristica_hamming(estado):
+    h = 0
+    if estado[0] != "1": 
+        h += 1
+    if estado[1] != "2": 
+        h += 1
+    if estado[2] != "3": 
+        h += 1
+    if estado[3] != "4": 
+        h += 1
+    if estado[4] != "5": 
+        h += 1
+    if estado[5] != "6": 
+        h += 1
+    if estado[6] != "7": 
+        h += 1
+    if estado[7] != "8": 
+        h += 1
+    return h
 
 
 def astar_hamming(estado):
@@ -72,8 +205,43 @@ def astar_hamming(estado):
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    if not _tem_solucao(estado):
+        return None
+
+    explorados = set()
+
+    fronteira = FilaPrioridades()
+    fronteira.enfileira(calcula_heuristica_hamming(estado), Nodo(estado,None,None,0))
+
+    while fronteira.items:
+        f, nodo = fronteira.desenfileira()
+        if nodo.estado == ESTADO_FINAL:
+            return caminho(nodo)
+        if nodo.estado not in explorados:
+            explorados.add(nodo.estado)
+            vizinhos = expande(nodo)
+            for n in vizinhos:
+                    custo = calcula_heuristica_hamming(n.estado)
+                    fronteira.enfileira(custo + n.custo, n)
+    return None
+
+def calcula_heuristica_manhattan(estado):
+    h = 0
+    for i, valor in enumerate(estado):
+        if valor == VAZIO:
+            continue
+        valor_int = int(valor)
+        valor_x = i % 3
+        valor_y = i // 3
+
+        final_x = (valor_int-1) % 3
+        final_y = (valor_int-1) // 3
+
+        delta_x = abs(final_x - valor_x)
+        delta_y = abs(final_y - valor_y)
+        delta = delta_x + delta_y
+        h += delta
+    return h
 
 
 def astar_manhattan(estado):
@@ -85,5 +253,22 @@ def astar_manhattan(estado):
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    if not _tem_solucao(estado):
+        return None
+
+    explorados = set()
+
+    fronteira = FilaPrioridades()
+    fronteira.enfileira(calcula_heuristica_manhattan(estado), Nodo(estado,None,None,0))
+
+    while fronteira.items:
+        f, nodo = fronteira.desenfileira()
+        if nodo.estado == ESTADO_FINAL:
+            return caminho(nodo)
+        if nodo.estado not in explorados:
+            explorados.add(nodo.estado)
+            vizinhos = expande(nodo)
+            for n in vizinhos:
+                    custo = calcula_heuristica_manhattan(n.estado)
+                    fronteira.enfileira(custo + n.custo, n)
+    return None
