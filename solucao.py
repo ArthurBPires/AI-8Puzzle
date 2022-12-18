@@ -36,6 +36,11 @@ class Nodo:
     def __le__(self, other):
         return False
 
+def swap(estado, i1, i2):
+    estado = list(estado)
+    estado[i1], estado[i2] = estado[i2], estado[i1]
+    return ''.join(estado)
+
 def sucessor(estado):
     """
     Recebe um estado (string) e retorna uma lista de tuplas (ação,estado atingido)
@@ -44,29 +49,22 @@ def sucessor(estado):
     :param estado:
     :return:
     """
-    lista_possiveis = []
-    pos = estado.find('_')
-    if pos <= 5:
-        novo_estado = list(estado)
-        novo_estado[pos], novo_estado[pos +
-                                      3] = novo_estado[pos+3], novo_estado[pos]
-        lista_possiveis.append(('abaixo', str(''.join(novo_estado))))
-    if pos >= 3:
-        novo_estado = list(estado)
-        novo_estado[pos], novo_estado[pos -
-                                      3] = novo_estado[pos-3], novo_estado[pos]
-        lista_possiveis.append(('acima', str(''.join(novo_estado))))
-    if pos % 3 != 2:
-        novo_estado = list(estado)
-        novo_estado[pos], novo_estado[pos +
-                                      1] = novo_estado[pos+1], novo_estado[pos]
-        lista_possiveis.append(('direita', str(''.join(novo_estado))))
-    if pos % 3 != 0:
-        novo_estado = list(estado)
-        novo_estado[pos], novo_estado[pos -
-                                      1] = novo_estado[pos-1], novo_estado[pos]
-        lista_possiveis.append(('esquerda', str(''.join(novo_estado))))
-    return lista_possiveis
+    sucessores = []
+    pos_vazio = estado.find('_')
+
+    if pos_vazio - 3 >= 0:
+        sucessores.append(("acima", swap(estado, pos_vazio, pos_vazio - 3)))
+    if pos_vazio + 3 < 9:
+        sucessores.append(("abaixo", swap(estado, pos_vazio, pos_vazio + 3)))    
+    if pos_vazio % 3 == 0:
+        sucessores.append(("direita", swap(estado, pos_vazio, pos_vazio + 1)))
+    elif pos_vazio % 3 == 1:
+        sucessores.append(("direita", swap(estado, pos_vazio, pos_vazio + 1)))
+        sucessores.append(("esquerda", swap(estado, pos_vazio, pos_vazio - 1)))
+    elif pos_vazio % 3 == 2:
+        sucessores.append(("esquerda", swap(estado, pos_vazio, pos_vazio - 1)))
+
+    return sucessores
 
 
 def expande(nodo):
@@ -295,4 +293,4 @@ def analize_algoritmos() :
     testes_de_algoritmo(astar_hamming,valor_inicial_de_teste)
     testes_de_algoritmo(astar_manhattan,valor_inicial_de_teste)
 
-analize_algoritmos()
+#analize_algoritmos()
