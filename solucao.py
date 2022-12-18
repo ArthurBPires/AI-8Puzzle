@@ -34,18 +34,6 @@ class Nodo:
     def __le__(self, other):
         return False
 
-def _movimenta(estado, movimento):
-    posicao_movimentada = movimento[1]
-    posicao_livre = estado.find(VAZIO)
-
-    peca_movimentada = estado[posicao_movimentada]
-
-    novo_estado = estado
-    novo_estado = novo_estado[:posicao_movimentada] + VAZIO + novo_estado[posicao_movimentada + 1:]
-    novo_estado = novo_estado[:posicao_livre] + peca_movimentada + novo_estado[posicao_livre + 1:]
-    return novo_estado
-
-
 def sucessor(estado):
     """
     Recebe um estado (string) e retorna uma lista de tuplas (ação,estado atingido)
