@@ -6,12 +6,11 @@ ABAIXO = "abaixo"
 ACIMA = "acima"
 VAZIO = "_"
 ESTADO_FINAL = "12345678_"
-g_numero_expandidos = 0
 
-from estrutura_dados import Pilha as Pilha
 from estrutura_dados import Fila as Fila
 from estrutura_dados import FilaPrioridades as FilaPrioridades
-import time
+
+from queue import LifoQueue
 
 class Nodo:
     """
@@ -36,11 +35,6 @@ class Nodo:
     def __le__(self, other):
         return False
 
-def swap(estado, i1, i2):
-    estado = list(estado)
-    estado[i1], estado[i2] = estado[i2], estado[i1]
-    return ''.join(estado)
-
 def sucessor(estado):
     """
     Recebe um estado (string) e retorna uma lista de tuplas (ação,estado atingido)
@@ -49,22 +43,29 @@ def sucessor(estado):
     :param estado:
     :return:
     """
-    sucessores = []
-    pos_vazio = estado.find('_')
-
-    if pos_vazio - 3 >= 0:
-        sucessores.append(("acima", swap(estado, pos_vazio, pos_vazio - 3)))
-    if pos_vazio + 3 < 9:
-        sucessores.append(("abaixo", swap(estado, pos_vazio, pos_vazio + 3)))    
-    if pos_vazio % 3 == 0:
-        sucessores.append(("direita", swap(estado, pos_vazio, pos_vazio + 1)))
-    elif pos_vazio % 3 == 1:
-        sucessores.append(("direita", swap(estado, pos_vazio, pos_vazio + 1)))
-        sucessores.append(("esquerda", swap(estado, pos_vazio, pos_vazio - 1)))
-    elif pos_vazio % 3 == 2:
-        sucessores.append(("esquerda", swap(estado, pos_vazio, pos_vazio - 1)))
-
-    return sucessores
+    lista_possiveis = []
+    pos = estado.find('_')
+    if pos <= 5:
+        novo_estado = list(estado)
+        novo_estado[pos], novo_estado[pos +
+                                      3] = novo_estado[pos+3], novo_estado[pos]
+        lista_possiveis.append(('abaixo', str(''.join(novo_estado))))
+    if pos >= 3:
+        novo_estado = list(estado)
+        novo_estado[pos], novo_estado[pos -
+                                      3] = novo_estado[pos-3], novo_estado[pos]
+        lista_possiveis.append(('acima', str(''.join(novo_estado))))
+    if pos % 3 != 2:
+        novo_estado = list(estado)
+        novo_estado[pos], novo_estado[pos +
+                                      1] = novo_estado[pos+1], novo_estado[pos]
+        lista_possiveis.append(('direita', str(''.join(novo_estado))))
+    if pos % 3 != 0:
+        novo_estado = list(estado)
+        novo_estado[pos], novo_estado[pos -
+                                      1] = novo_estado[pos-1], novo_estado[pos]
+        lista_possiveis.append(('esquerda', str(''.join(novo_estado))))
+    return lista_possiveis
 
 
 def expande(nodo):
@@ -74,9 +75,6 @@ def expande(nodo):
     :param nodo: objeto da classe Nodo
     :return:
     """
-    global g_numero_expandidos
-    g_numero_expandidos = g_numero_expandidos + 1
-
     pai = nodo
     
     novo_custo = pai.custo + 1
@@ -97,15 +95,15 @@ def expande(nodo):
     return filhos
 
 def caminho(node_final):
-    f = Pilha()
+    f = LifoQueue()
     caminho = []
 
     while node_final.pai != None:
-        f.push((node_final.acao)) #f.push((node_final.estado,node_final.acao))
+        f.put((node_final.acao)) #f.push((node_final.estado,node_final.acao))
         node_final = node_final.pai
     
-    while f.items:
-        caminho.append(f.pop())
+    while not f.empty():
+        caminho.append(f.get())
     return caminho
 
 
@@ -146,18 +144,18 @@ def dfs(estado):
     """
     explorados = set()
 
-    fronteira = Pilha()
-    fronteira.push(Nodo(estado,None,None,0))
+    fronteira = LifoQueue()
+    fronteira.put(Nodo(estado,None,None,0))
 
-    while fronteira.items:
-        nodo = fronteira.pop()
+    while not fronteira.empty():
+        nodo = fronteira.get()
         if nodo.estado == ESTADO_FINAL:
             return caminho(nodo)
         if nodo.estado not in explorados:
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
             for n in vizinhos:
-                fronteira.push(n)
+                fronteira.put(n)
     return None
 
 def _tem_solucao(estado):
@@ -270,27 +268,3 @@ def astar_manhattan(estado):
                     custo = calcula_heuristica_manhattan(n.estado)
                     fronteira.enfileira(custo + n.custo, n)
     return None
-
-def testes_de_algoritmo(algoritmo, valor_inicial):
-
-    inicio = time.time()
-    resultado = algoritmo(valor_inicial)
-    fim = time.time()
-
-
-    custo = len(resultado)
-    tempo = fim-inicio
-    global g_numero_expandidos
-
-    print(f'\n Algoritmo: {algoritmo.__name__} \n Tempo: {tempo} segundos\n Custo: {custo}\n Número de Explorados: {g_numero_expandidos} nodos')
-
-    g_numero_expandidos = 0
-
-def analize_algoritmos() :
-    valor_inicial_de_teste = "2_3541687"
-    testes_de_algoritmo(dfs,valor_inicial_de_teste)
-    testes_de_algoritmo(bfs,valor_inicial_de_teste)
-    testes_de_algoritmo(astar_hamming,valor_inicial_de_teste)
-    testes_de_algoritmo(astar_manhattan,valor_inicial_de_teste)
-
-#analize_algoritmos()
