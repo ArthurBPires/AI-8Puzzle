@@ -8,10 +8,11 @@ VAZIO = "_"
 ESTADO_FINAL = "12345678_"
 g_numero_expandidos = 0
 
-from estrutura_dados import Pilha as Pilha
 from estrutura_dados import Fila as Fila
 from estrutura_dados import FilaPrioridades as FilaPrioridades
 import time
+
+from queue import LifoQueue
 
 class Nodo:
     """
@@ -97,15 +98,15 @@ def expande(nodo):
     return filhos
 
 def caminho(node_final):
-    f = Pilha()
+    f = LifoQueue()
     caminho = []
 
     while node_final.pai != None:
-        f.push((node_final.acao)) #f.push((node_final.estado,node_final.acao))
+        f.put((node_final.acao)) #f.push((node_final.estado,node_final.acao))
         node_final = node_final.pai
     
-    while f.items:
-        caminho.append(f.pop())
+    while not f.empty():
+        caminho.append(f.get())
     return caminho
 
 
@@ -146,18 +147,18 @@ def dfs(estado):
     """
     explorados = set()
 
-    fronteira = Pilha()
-    fronteira.push(Nodo(estado,None,None,0))
+    fronteira = LifoQueue()
+    fronteira.put(Nodo(estado,None,None,0))
 
-    while fronteira.items:
-        nodo = fronteira.pop()
+    while not fronteira.empty():
+        nodo = fronteira.get()
         if nodo.estado == ESTADO_FINAL:
             return caminho(nodo)
         if nodo.estado not in explorados:
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
             for n in vizinhos:
-                fronteira.push(n)
+                fronteira.put(n)
     return None
 
 def _tem_solucao(estado):
