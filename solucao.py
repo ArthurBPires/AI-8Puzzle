@@ -6,10 +6,12 @@ ABAIXO = "abaixo"
 ACIMA = "acima"
 VAZIO = "_"
 ESTADO_FINAL = "12345678_"
+g_numero_expandidos = 0
 
 from estrutura_dados import Pilha as Pilha
 from estrutura_dados import Fila as Fila
 from estrutura_dados import FilaPrioridades as FilaPrioridades
+import time
 
 class Nodo:
     """
@@ -74,6 +76,9 @@ def expande(nodo):
     :param nodo: objeto da classe Nodo
     :return:
     """
+    global g_numero_expandidos
+    g_numero_expandidos = g_numero_expandidos + 1
+
     pai = nodo
     
     novo_custo = pai.custo + 1
@@ -267,3 +272,27 @@ def astar_manhattan(estado):
                     custo = calcula_heuristica_manhattan(n.estado)
                     fronteira.enfileira(custo + n.custo, n)
     return None
+
+def testes_de_algoritmo(algoritmo, valor_inicial):
+
+    inicio = time.time()
+    resultado = algoritmo(valor_inicial)
+    fim = time.time()
+
+
+    custo = len(resultado)
+    tempo = fim-inicio
+    global g_numero_expandidos
+
+    print(f'\n Algoritmo: {algoritmo.__name__} \n Tempo: {tempo} segundos\n Custo: {custo}\n Número de Explorados: {g_numero_expandidos} nodos')
+
+    g_numero_expandidos = 0
+
+def analize_algoritmos() :
+    valor_inicial_de_teste = "2_3541687"
+    testes_de_algoritmo(dfs,valor_inicial_de_teste)
+    testes_de_algoritmo(bfs,valor_inicial_de_teste)
+    testes_de_algoritmo(astar_hamming,valor_inicial_de_teste)
+    testes_de_algoritmo(astar_manhattan,valor_inicial_de_teste)
+
+analize_algoritmos()
