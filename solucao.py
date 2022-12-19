@@ -8,11 +8,11 @@ VAZIO = "_"
 ESTADO_FINAL = "12345678_"
 g_numero_expandidos = 0
 
-from estrutura_dados import Fila as Fila
-from estrutura_dados import FilaPrioridades as FilaPrioridades
 import time
 
 from queue import LifoQueue
+from collections import deque
+from queue import PriorityQueue
 
 class Nodo:
     """
@@ -121,18 +121,19 @@ def bfs(estado):
     """
     explorados = set()
 
-    fronteira = Fila()
-    fronteira.enfileira(Nodo(estado,None,None,0))
+    fronteira = deque()
+    #fronteira.enfileira(Nodo(estado,None,None,0))
+    fronteira.append(Nodo(estado,None,None,0))
 
-    while fronteira.items:
-        nodo = fronteira.desenfileira()
+    while fronteira:
+        nodo = fronteira.popleft()
         if nodo.estado == ESTADO_FINAL:
             return caminho(nodo)
         if nodo.estado not in explorados:
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
             for n in vizinhos:
-                fronteira.enfileira(n)
+                fronteira.append(n)
     return None
 
 
@@ -209,11 +210,11 @@ def astar_hamming(estado):
 
     explorados = set()
 
-    fronteira = FilaPrioridades()
-    fronteira.enfileira(calcula_heuristica_hamming(estado), Nodo(estado,None,None,0))
+    fronteira = PriorityQueue()
+    fronteira.put((calcula_heuristica_hamming(estado), Nodo(estado,None,None,0)))
 
-    while fronteira.items:
-        f, nodo = fronteira.desenfileira()
+    while fronteira:
+        f, nodo = fronteira.get()
         if nodo.estado == ESTADO_FINAL:
             return caminho(nodo)
         if nodo.estado not in explorados:
@@ -221,7 +222,7 @@ def astar_hamming(estado):
             vizinhos = expande(nodo)
             for n in vizinhos:
                     custo = calcula_heuristica_hamming(n.estado)
-                    fronteira.enfileira(custo + n.custo, n)
+                    fronteira.put((custo + n.custo, n))
     return None
 
 def calcula_heuristica_manhattan(estado):
@@ -257,11 +258,11 @@ def astar_manhattan(estado):
 
     explorados = set()
 
-    fronteira = FilaPrioridades()
-    fronteira.enfileira(calcula_heuristica_manhattan(estado), Nodo(estado,None,None,0))
+    fronteira = PriorityQueue()
+    fronteira.put((calcula_heuristica_manhattan(estado), Nodo(estado,None,None,0)))
 
-    while fronteira.items:
-        f, nodo = fronteira.desenfileira()
+    while fronteira:
+        f, nodo = fronteira.get()
         if nodo.estado == ESTADO_FINAL:
             return caminho(nodo)
         if nodo.estado not in explorados:
@@ -269,7 +270,7 @@ def astar_manhattan(estado):
             vizinhos = expande(nodo)
             for n in vizinhos:
                     custo = calcula_heuristica_manhattan(n.estado)
-                    fronteira.enfileira(custo + n.custo, n)
+                    fronteira.put((custo + n.custo, n))
     return None
 
 def testes_de_algoritmo(algoritmo, valor_inicial):
