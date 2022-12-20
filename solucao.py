@@ -1,18 +1,15 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-ESQUERDA = "esquerda"
-DIREITA = "direita"
-ABAIXO = "abaixo"
-ACIMA = "acima"
+#!/usr/bin/python
+
+g_numero_expandidos = 0
 VAZIO = "_"
 ESTADO_FINAL = "12345678_"
-g_numero_expandidos = 0
 
 import time
 
 from queue import LifoQueue
-from collections import deque
 from queue import PriorityQueue
+from collections import deque
 
 class Nodo:
     """
@@ -33,13 +30,12 @@ class Nodo:
 
     def __lt__(self, other):
         return False
+    
 
-    def __le__(self, other):
-        return False
+def swap(estado, a, b):
 
-def swap(estado, i1, i2):
     estado = list(estado)
-    estado[i1], estado[i2] = estado[i2], estado[i1]
+    estado[a], estado[b] = estado[b], estado[a]
     return ''.join(estado)
 
 def sucessor(estado):
@@ -50,20 +46,17 @@ def sucessor(estado):
     :param estado:
     :return:
     """
+    posicao_vazia = estado.find('_')
     sucessores = []
-    pos_vazio = estado.find('_')
 
-    if pos_vazio - 3 >= 0:
-        sucessores.append(("acima", swap(estado, pos_vazio, pos_vazio - 3)))
-    if pos_vazio + 3 < 9:
-        sucessores.append(("abaixo", swap(estado, pos_vazio, pos_vazio + 3)))    
-    if pos_vazio % 3 == 0:
-        sucessores.append(("direita", swap(estado, pos_vazio, pos_vazio + 1)))
-    elif pos_vazio % 3 == 1:
-        sucessores.append(("direita", swap(estado, pos_vazio, pos_vazio + 1)))
-        sucessores.append(("esquerda", swap(estado, pos_vazio, pos_vazio - 1)))
-    elif pos_vazio % 3 == 2:
-        sucessores.append(("esquerda", swap(estado, pos_vazio, pos_vazio - 1)))
+    if posicao_vazia >= 3:
+        sucessores.append(("acima", swap(estado, posicao_vazia, posicao_vazia - 3)))
+    if posicao_vazia < 6:
+        sucessores.append(("abaixo", swap(estado, posicao_vazia, posicao_vazia + 3)))    
+    if (posicao_vazia + 1) % 3 != 0:
+        sucessores.append(("direita", swap(estado, posicao_vazia, posicao_vazia + 1)))
+    if posicao_vazia % 3 != 0:
+        sucessores.append(("esquerda", swap(estado, posicao_vazia, posicao_vazia - 1)))
 
     return sucessores
 
@@ -79,16 +72,16 @@ def expande(nodo):
     g_numero_expandidos = g_numero_expandidos + 1
 
     pai = nodo
-    
-    novo_custo = pai.custo + 1
-    movimentos = sucessor(pai.estado)
-
     filhos = []
+    novo_custo = pai.custo + 1
+    
+
+    movimentos = sucessor(pai.estado)
     for (acao, estado) in movimentos:
         filho = Nodo(estado, pai, acao, novo_custo)
 
-        if pai.pai is not None: #nodo não é raiz
-            if estado == pai.pai.estado:#sucessor é igual ao movimento anterior. não adiciona na lista de filhos
+        if pai.pai is not None:
+            if estado == pai.pai.estado:
                 pass
             else:
                 filhos.append(filho)
@@ -97,18 +90,14 @@ def expande(nodo):
 
     return filhos
 
-def caminho(node_final):
-    f = LifoQueue()
-    caminho = []
+def sequencia_passos(node_final):
+    sequencia = deque()
 
     while node_final.pai != None:
-        f.put((node_final.acao)) #f.push((node_final.estado,node_final.acao))
+        sequencia.appendleft(node_final.acao)
         node_final = node_final.pai
     
-    while not f.empty():
-        caminho.append(f.get())
-    return caminho
-
+    return list(sequencia)
 
 def bfs(estado):
     """
@@ -122,13 +111,12 @@ def bfs(estado):
     explorados = set()
 
     fronteira = deque()
-    #fronteira.enfileira(Nodo(estado,None,None,0))
     fronteira.append(Nodo(estado,None,None,0))
 
     while fronteira:
         nodo = fronteira.popleft()
         if nodo.estado == ESTADO_FINAL:
-            return caminho(nodo)
+            return sequencia_passos(nodo)
         if nodo.estado not in explorados:
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
@@ -154,7 +142,7 @@ def dfs(estado):
     while not fronteira.empty():
         nodo = fronteira.get()
         if nodo.estado == ESTADO_FINAL:
-            return caminho(nodo)
+            return sequencia_passos(nodo)
         if nodo.estado not in explorados:
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
@@ -162,37 +150,27 @@ def dfs(estado):
                 fronteira.put(n)
     return None
 
-def _tem_solucao(estado):
-    inversoes = 0
+def sem_solucao (estado):
+    numero_inversoes = 0
+
     for i, valor in enumerate(estado):
         if valor == VAZIO:
             continue
-        for k, posterior in enumerate(estado):
-            if posterior == VAZIO:
+        for k, proximo in enumerate(estado):
+            if proximo == VAZIO:
                 continue
             if k > i:
-                if valor > posterior:
-                    inversoes += 1
-    return (inversoes % 2 == 0)
+                if valor > proximo:
+                    numero_inversoes += 1
 
-def calcula_heuristica_hamming(estado):
+    return (numero_inversoes % 2 != 0)
+
+def heuristica_hamming(estado):
     h = 0
-    if estado[0] != "1": 
-        h += 1
-    if estado[1] != "2": 
-        h += 1
-    if estado[2] != "3": 
-        h += 1
-    if estado[3] != "4": 
-        h += 1
-    if estado[4] != "5": 
-        h += 1
-    if estado[5] != "6": 
-        h += 1
-    if estado[6] != "7": 
-        h += 1
-    if estado[7] != "8": 
-        h += 1
+    
+    for i in range(0,9):
+        if estado[i] != ESTADO_FINAL[i]:
+            h += 1
     return h
 
 
@@ -205,42 +183,43 @@ def astar_hamming(estado):
     :param estado: str
     :return:
     """
-    if not _tem_solucao(estado):
+    if sem_solucao(estado):
         return None
 
     explorados = set()
 
     fronteira = PriorityQueue()
-    fronteira.put((calcula_heuristica_hamming(estado), Nodo(estado,None,None,0)))
+    fronteira.put((heuristica_hamming(estado), Nodo(estado,None,None,0)))
 
     while fronteira:
         f, nodo = fronteira.get()
         if nodo.estado == ESTADO_FINAL:
-            return caminho(nodo)
+            return sequencia_passos(nodo)
         if nodo.estado not in explorados:
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
             for n in vizinhos:
-                    custo = calcula_heuristica_hamming(n.estado)
+                    custo = heuristica_hamming(n.estado)
                     fronteira.put((custo + n.custo, n))
     return None
 
-def calcula_heuristica_manhattan(estado):
+def heuristica_manhattan(estado):
     h = 0
+
     for i, valor in enumerate(estado):
         if valor == VAZIO:
             continue
-        valor_int = int(valor)
-        valor_x = i % 3
-        valor_y = i // 3
 
-        final_x = (valor_int-1) % 3
-        final_y = (valor_int-1) // 3
+        x_inicial = i % 3
+        y_inicial = i // 3
 
-        delta_x = abs(final_x - valor_x)
-        delta_y = abs(final_y - valor_y)
-        delta = delta_x + delta_y
-        h += delta
+        x_final = (int(valor)-1) % 3
+        y_final = (int(valor)-1) // 3
+
+        delta_x = abs(x_final - x_inicial)
+        delta_y = abs(y_final - y_inicial)
+        
+        h += delta_x + delta_y
     return h
 
 
@@ -253,23 +232,24 @@ def astar_manhattan(estado):
     :param estado: str
     :return:
     """
-    if not _tem_solucao(estado):
+    if sem_solucao(estado):
         return None
 
     explorados = set()
 
     fronteira = PriorityQueue()
-    fronteira.put((calcula_heuristica_manhattan(estado), Nodo(estado,None,None,0)))
+
+    fronteira.put((heuristica_manhattan(estado), Nodo(estado,None,None,0)))
 
     while fronteira:
-        f, nodo = fronteira.get()
+        a, nodo = fronteira.get()
         if nodo.estado == ESTADO_FINAL:
-            return caminho(nodo)
+            return sequencia_passos(nodo)
         if nodo.estado not in explorados:
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
             for n in vizinhos:
-                    custo = calcula_heuristica_manhattan(n.estado)
+                    custo = heuristica_manhattan(n.estado)
                     fronteira.put((custo + n.custo, n))
     return None
 
