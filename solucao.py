@@ -53,16 +53,13 @@ def sucessor(estado):
     sucessores = []
     posicao_vazio = estado.find(VAZIO)
 
-    if posicao_vazio - 3 >= 0:
+    if posicao_vazio != 0 and posicao_vazio != 1 and posicao_vazio != 2:
         sucessores.append(("acima", mover(estado, posicao_vazio, posicao_vazio - 3)))
-    if posicao_vazio + 3 < 9:
+    if posicao_vazio != 6 and posicao_vazio != 7 and posicao_vazio != 8:
         sucessores.append(("abaixo", mover(estado, posicao_vazio, posicao_vazio + 3)))    
-    if posicao_vazio % 3 == 0:
+    if posicao_vazio != 2 and posicao_vazio != 5 and posicao_vazio != 8:
         sucessores.append(("direita", mover(estado, posicao_vazio, posicao_vazio + 1)))
-    elif posicao_vazio % 3 == 1:
-        sucessores.append(("direita", mover(estado, posicao_vazio, posicao_vazio + 1)))
-        sucessores.append(("esquerda", mover(estado, posicao_vazio, posicao_vazio - 1)))
-    elif posicao_vazio % 3 == 2:
+    if posicao_vazio != 0 and posicao_vazio != 3 and posicao_vazio != 6:
         sucessores.append(("esquerda", mover(estado, posicao_vazio, posicao_vazio - 1)))
 
     return sucessores
@@ -177,7 +174,7 @@ def _tem_solucao(estado):
                     inversoes += 1
     return (inversoes % 2 == 0)
 
-def calcula_heuristica_hamming(estado):
+def calcula_hamming(estado):
     h = 0
     for n in range(8):
         if estado[n] != str(n):
@@ -200,7 +197,7 @@ def astar_hamming(estado):
     explorados = set()
 
     fronteira = PriorityQueue()
-    fronteira.put((calcula_heuristica_hamming(estado), Nodo(estado,None,None,0)))
+    fronteira.put((calcula_hamming(estado), Nodo(estado,None,None,0)))
 
     while fronteira:
         f, nodo = fronteira.get()
@@ -210,11 +207,11 @@ def astar_hamming(estado):
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
             for n in vizinhos:
-                    custo = calcula_heuristica_hamming(n.estado)
+                    custo = calcula_hamming(n.estado)
                     fronteira.put((custo + n.custo, n))
     return None
 
-def calcula_heuristica_manhattan(estado):
+def calcula_manhattan(estado):
     h = 0
     for i, valor in enumerate(estado):
         if valor == VAZIO:
@@ -248,7 +245,7 @@ def astar_manhattan(estado):
     explorados = set()
 
     fronteira = PriorityQueue()
-    fronteira.put((calcula_heuristica_manhattan(estado), Nodo(estado,None,None,0)))
+    fronteira.put((calcula_manhattan(estado), Nodo(estado,None,None,0)))
 
     while fronteira:
         f, nodo = fronteira.get()
@@ -258,7 +255,7 @@ def astar_manhattan(estado):
             explorados.add(nodo.estado)
             vizinhos = expande(nodo)
             for n in vizinhos:
-                    custo = calcula_heuristica_manhattan(n.estado)
+                    custo = calcula_manhattan(n.estado)
                     fronteira.put((custo + n.custo, n))
     return None
 
