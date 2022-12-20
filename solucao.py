@@ -78,17 +78,16 @@ def expande(nodo):
     global g_numero_expandidos
     g_numero_expandidos = g_numero_expandidos + 1
 
-    pai = nodo
     
-    novo_custo = pai.custo + 1
-    movimentos = sucessor(pai.estado)
+    novo_custo = nodo.custo + 1
+    movimentos = sucessor(nodo.estado)
 
     filhos = []
     for (acao, estado) in movimentos:
-        filho = Nodo(estado, pai, acao, novo_custo)
+        filho = Nodo(estado, nodo, acao, novo_custo)
 
-        if pai.pai is not None: #não é raiz
-            if estado == pai.pai.estado: #se movimento sucessor é igual ao anterior, não é adicionado aos filhos
+        if nodo.pai: #não é raiz
+            if estado == nodo.pai.estado: #se movimento sucessor é igual ao anterior, não é adicionado aos filhos
                 pass
             else:
                 filhos.append(filho)
@@ -97,12 +96,16 @@ def expande(nodo):
 
     return filhos
 
+
 def caminho(node_final):
+
+    #monta o caminho até a solução encontrada
+
     pilha = LifoQueue()
     caminho = []
     node = node_final
 
-    while node.pai:
+    while node.pai: #do nodo solução até o nodo raiz
         pilha.put((node.acao))
         node = node.pai
     
@@ -176,22 +179,9 @@ def _tem_solucao(estado):
 
 def calcula_heuristica_hamming(estado):
     h = 0
-    if estado[0] != "1": 
-        h += 1
-    if estado[1] != "2": 
-        h += 1
-    if estado[2] != "3": 
-        h += 1
-    if estado[3] != "4": 
-        h += 1
-    if estado[4] != "5": 
-        h += 1
-    if estado[5] != "6": 
-        h += 1
-    if estado[6] != "7": 
-        h += 1
-    if estado[7] != "8": 
-        h += 1
+    for n in range(8):
+        if estado[n] != str(n):
+            h += 1
     return h
 
 
