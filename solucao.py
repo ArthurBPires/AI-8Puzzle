@@ -37,10 +37,10 @@ class Nodo:
     def __le__(self, other):
         return False
 
-def swap(estado, i1, i2):
-    estado = list(estado)
-    estado[i1], estado[i2] = estado[i2], estado[i1]
-    return ''.join(estado)
+def mover(estado, pos1, pos2):
+    novo_estado = list(estado)
+    novo_estado[pos1], novo_estado[pos2] = novo_estado[pos2], novo_estado[pos1]
+    return ''.join(novo_estado)
 
 def sucessor(estado):
     """
@@ -51,19 +51,19 @@ def sucessor(estado):
     :return:
     """
     sucessores = []
-    pos_vazio = estado.find('_')
+    posicao_vazio = estado.find(VAZIO)
 
-    if pos_vazio - 3 >= 0:
-        sucessores.append(("acima", swap(estado, pos_vazio, pos_vazio - 3)))
-    if pos_vazio + 3 < 9:
-        sucessores.append(("abaixo", swap(estado, pos_vazio, pos_vazio + 3)))    
-    if pos_vazio % 3 == 0:
-        sucessores.append(("direita", swap(estado, pos_vazio, pos_vazio + 1)))
-    elif pos_vazio % 3 == 1:
-        sucessores.append(("direita", swap(estado, pos_vazio, pos_vazio + 1)))
-        sucessores.append(("esquerda", swap(estado, pos_vazio, pos_vazio - 1)))
-    elif pos_vazio % 3 == 2:
-        sucessores.append(("esquerda", swap(estado, pos_vazio, pos_vazio - 1)))
+    if posicao_vazio - 3 >= 0:
+        sucessores.append(("acima", mover(estado, posicao_vazio, posicao_vazio - 3)))
+    if posicao_vazio + 3 < 9:
+        sucessores.append(("abaixo", mover(estado, posicao_vazio, posicao_vazio + 3)))    
+    if posicao_vazio % 3 == 0:
+        sucessores.append(("direita", mover(estado, posicao_vazio, posicao_vazio + 1)))
+    elif posicao_vazio % 3 == 1:
+        sucessores.append(("direita", mover(estado, posicao_vazio, posicao_vazio + 1)))
+        sucessores.append(("esquerda", mover(estado, posicao_vazio, posicao_vazio - 1)))
+    elif posicao_vazio % 3 == 2:
+        sucessores.append(("esquerda", mover(estado, posicao_vazio, posicao_vazio - 1)))
 
     return sucessores
 
@@ -87,8 +87,8 @@ def expande(nodo):
     for (acao, estado) in movimentos:
         filho = Nodo(estado, pai, acao, novo_custo)
 
-        if pai.pai is not None: #nodo não é raiz
-            if estado == pai.pai.estado:#sucessor é igual ao movimento anterior. não adiciona na lista de filhos
+        if pai.pai is not None: #não é raiz
+            if estado == pai.pai.estado: #se movimento sucessor é igual ao anterior, não é adicionado aos filhos
                 pass
             else:
                 filhos.append(filho)
@@ -98,15 +98,16 @@ def expande(nodo):
     return filhos
 
 def caminho(node_final):
-    f = LifoQueue()
+    pilha = LifoQueue()
     caminho = []
+    node = node_final
 
-    while node_final.pai != None:
-        f.put((node_final.acao)) #f.push((node_final.estado,node_final.acao))
-        node_final = node_final.pai
+    while node.pai:
+        pilha.put((node.acao))
+        node = node.pai
     
-    while not f.empty():
-        caminho.append(f.get())
+    while not pilha.empty():
+        caminho.append(pilha.get())
     return caminho
 
 
@@ -119,10 +120,9 @@ def bfs(estado):
     :param estado: str
     :return:
     """
-    explorados = set()
 
+    explorados = set()
     fronteira = deque()
-    #fronteira.enfileira(Nodo(estado,None,None,0))
     fronteira.append(Nodo(estado,None,None,0))
 
     while fronteira:
@@ -147,7 +147,6 @@ def dfs(estado):
     :return:
     """
     explorados = set()
-
     fronteira = LifoQueue()
     fronteira.put(Nodo(estado,None,None,0))
 
