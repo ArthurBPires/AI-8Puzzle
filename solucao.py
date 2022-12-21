@@ -261,7 +261,7 @@ def testes_de_algoritmo(algoritmo, valor_inicial):
     tempo = fim-inicio
     global g_numero_expandidos
 
-    print(f'\n Algoritmo: {algoritmo.__name__} \n Tempo: {tempo} segundos\n Custo: {custo}\n Número de Explorados: {g_numero_expandidos} nodos')
+    print(f'\n Algoritmo: {algoritmo.__name__} \n Tempo: {tempo} segundos\n Custo: {custo}\n Número de Nodos Expandidos: {g_numero_expandidos} nodos')
 
     g_numero_expandidos = 0
 
