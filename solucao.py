@@ -30,13 +30,11 @@ class Nodo:
 
     def __lt__(self, other):
         return False
-    
 
-def swap(estado, a, b):
-
-    estado = list(estado)
-    estado[a], estado[b] = estado[b], estado[a]
-    return ''.join(estado)
+def mover(estado, pos1, pos2):
+    novo_estado = list(estado)
+    novo_estado[pos1], novo_estado[pos2] = novo_estado[pos2], novo_estado[pos1]
+    return ''.join(novo_estado)
 
 def sucessor(estado):
     """
@@ -50,13 +48,13 @@ def sucessor(estado):
     sucessores = []
 
     if posicao_vazia >= 3:
-        sucessores.append(("acima", swap(estado, posicao_vazia, posicao_vazia - 3)))
+        sucessores.append(("acima", mover(estado, posicao_vazia, posicao_vazia - 3)))
     if posicao_vazia < 6:
-        sucessores.append(("abaixo", swap(estado, posicao_vazia, posicao_vazia + 3)))    
+        sucessores.append(("abaixo", mover(estado, posicao_vazia, posicao_vazia + 3)))    
     if (posicao_vazia + 1) % 3 != 0:
-        sucessores.append(("direita", swap(estado, posicao_vazia, posicao_vazia + 1)))
+        sucessores.append(("direita", mover(estado, posicao_vazia, posicao_vazia + 1)))
     if posicao_vazia % 3 != 0:
-        sucessores.append(("esquerda", swap(estado, posicao_vazia, posicao_vazia - 1)))
+        sucessores.append(("esquerda", mover(estado, posicao_vazia, posicao_vazia - 1)))
 
     return sucessores
 
@@ -78,7 +76,7 @@ def expande(nodo):
 
     movimentos = sucessor(pai.estado)
     for (acao, estado) in movimentos:
-        filho = Nodo(estado, pai, acao, novo_custo)
+        filho = Nodo(estado, nodo, acao, novo_custo)
 
         if pai.pai is not None:
             if estado == pai.pai.estado:
@@ -108,8 +106,8 @@ def bfs(estado):
     :param estado: str
     :return:
     """
-    explorados = set()
 
+    explorados = set()
     fronteira = deque()
     fronteira.append(Nodo(estado,None,None,0))
 
@@ -135,7 +133,6 @@ def dfs(estado):
     :return:
     """
     explorados = set()
-
     fronteira = LifoQueue()
     fronteira.put(Nodo(estado,None,None,0))
 
@@ -168,7 +165,7 @@ def sem_solucao (estado):
 def heuristica_hamming(estado):
     h = 0
     
-    for i in range(0,9):
+    for i in range(8):
         if estado[i] != ESTADO_FINAL[i]:
             h += 1
     return h
